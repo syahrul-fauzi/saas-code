@@ -1,5 +1,5 @@
 {
-  "name": "turborepo-saas-boilerplate-code-api",
+  "name": "hono-api",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",

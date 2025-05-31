@@ -6,17 +6,18 @@
   "scripts": {
     "test": "vitest"
   },
-  "exports":{
+  "exports": {
     "./*": "./src/*.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "openai": "^4.77.0",
-    "@repo/auth": "*"
+    "@repo/auth": "*",
+    "next": "15.3.3",
+    "openai": "^4.77.0"
   },
   "devDependencies": {
-    "vitest": "^1.0.0"
+    "vitest": "^3.1.4"
   }
 }

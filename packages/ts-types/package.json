@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "*",
-    "vitest": "^1.0.0"
+    "vitest": "^3.1.4"
   },
   "keywords": [],
   "author": "",

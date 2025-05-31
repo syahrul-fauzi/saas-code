@@ -1,10 +1,19 @@
 import { describe, test, expect, vi, beforeEach, afterEach } from "vitest";
 import OpenAI from "openai";
 import { auth } from "@repo/auth/better-auth/auth";
+import { headers } from "next/headers";
+
+vi.mock("next/headers", () => ({
+    headers: vi.fn(() => new Headers())
+}));
 import { handleAssistantMessage } from "../../../src/openai/assistantServer";
 
 vi.mock("@repo/auth/better-auth/auth", () => ({
-    auth: vi.fn(() => Promise.resolve({ user: { id: "user123" } }))
+    auth: {
+        api: {
+            getSession: vi.fn(() => Promise.resolve({ user: { id: "user123" } }))
+        }
+    }
 }));
 
 vi.mock("openai", () => {
@@ -48,13 +57,13 @@ describe("handleAssistantMessage", () => {
     });
 
     test("should throw an error if user is not authenticated", async () => {
-        (auth).mockResolvedValue(null);
+        (auth.api.getSession as vi.Mock).mockResolvedValue(null);
         await expect(handleAssistantMessage("Hello"))
             .rejects.toThrow("User not authenticated");
     });
 
     test("should create a new thread if no thread exists for user", async () => {
-        (auth as any).mockResolvedValue({ user: { id: "user123" } });
+        (auth.api.getSession as vi.Mock).mockResolvedValue({ user: { id: "user123" } });
         mockOpenAI.beta.threads.create.mockResolvedValue({ id: "thread123" });
         mockOpenAI.beta.threads.messages.create.mockResolvedValue({});
         mockOpenAI.beta.threads.runs.createAndPoll.mockResolvedValue({ status: "completed", thread_id: "thread123" });
@@ -70,7 +79,7 @@ describe("handleAssistantMessage", () => {
     });
 
     test("should reuse an existing thread for the user", async () => {
-        (auth as any).mockResolvedValue({ user: { id: "user123" } });
+        (auth.api.getSession as vi.Mock).mockResolvedValue({ user: { id: "user123" } });
         (global as any).threadMap = new Map();
         (global as any).threadMap.set("user123", "existing-thread");
         
@@ -87,7 +96,7 @@ describe("handleAssistantMessage", () => {
     });
 
     test("should throw an error if OpenAI run fails", async () => {
-        (auth as any).mockResolvedValue({ user: { id: "user123" } });
+        (auth.api.getSession as vi.Mock).mockResolvedValue({ user: { id: "user123" } });
         mockOpenAI.beta.threads.create.mockResolvedValue({ id: "thread123" });
         mockOpenAI.beta.threads.messages.create.mockResolvedValue({});
         mockOpenAI.beta.threads.runs.createAndPoll.mockResolvedValue({ status: "failed", thread_id: "thread123" });

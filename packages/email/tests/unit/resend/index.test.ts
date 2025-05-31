@@ -54,7 +54,7 @@ describe('resend Unit Tests', () => {
     expect(mockSend).toHaveBeenCalledWith({
       from: process.env.NEXT_PUBLIC_SUPPORT_MAIL,
       to: testEmail,
-      subject: 'Reset Your Password',
+      subject: 'Reset your password',
       react: expect.any(Object) // Checking the React component
     });
   });

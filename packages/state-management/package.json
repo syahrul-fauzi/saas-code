@@ -9,14 +9,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "exports":{
+  "exports": {
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "recoil": "^0.7.7",
-    "@repo/ts-types": "*"
+    "@repo/ts-types": "*",
+    "recoil": "^0.7.7"
   },
   "devDependencies": {
-    "vitest": "^1.0.0"
+    "vitest": "^3.1.4"
   }
 }
