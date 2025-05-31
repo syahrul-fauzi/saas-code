@@ -15,5 +15,8 @@
   "dependencies": {
     "openai": "^4.77.0",
     "@repo/auth": "*"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
   }
 }

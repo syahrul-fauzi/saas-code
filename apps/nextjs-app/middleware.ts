@@ -1,91 +1,82 @@
-import { NextResponse, type NextRequest } from "next/server"
+import { NextResponse, type NextRequest } from "next/server";
 import { betterFetch } from "@better-fetch/fetch";
 import { Session } from "@repo/auth/better-auth/auth";
+import { ROUTES, CORS, URL as AppURL } from "./lib/config";
 
-const publicRoutes = ["/landing","/api/workflows","/public","/api/payments/dodo/webhook",
-    "/api/payments/stripe/webhook"]
-
-const authRoutes =["/sign-in","/sign-up","/error","/forgot-password","/reset-password",'/email-verified']
-
-const apiAuthPrefix = "/api/auth"
-
-const allowedOrigins = ['http://localhost:3000', 'https://bsamaritan.com','https://bayesian-labs.com']
-
-const corsOptions = {
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  }
-const secret = process.env.AUTH_SECRET!;
-
-export default async function middleware(req:NextRequest){
-
-      // Check the origin from the request
-    const origin = req.headers.get('origin') ?? ''
+export default async function middleware(req: NextRequest) {
+    // Check the origin from the request
+    const origin = req.headers.get('origin') ?? '';
     const pathName = req.nextUrl.pathname;
-    const isAllowedOrigin = allowedOrigins.includes(origin)
+    const isAllowedOrigin = CORS.ALLOWED_ORIGINS.includes(origin);
     
-    const { data: session} = await betterFetch<Session>(
-        "/api/auth/get-session",
-        {
-            baseURL: process.env.NEXT_PUBLIC_URL,
-            headers: {
-                cookie: req.headers.get("cookie") ?? "",
+    let isLoggedIn = false;
+    
+    try {
+        // Get the full URL for the API request
+        const baseUrl = AppURL.BASE || req.nextUrl.origin; // Try env var first, fallback to request origin
+        const { data: session } = await betterFetch<Session>(
+            "/api/auth/get-session",
+            {
+                baseURL: baseUrl,
+                headers: {
+                    cookie: req.headers.get("cookie") ?? "",
+                },
+                timeout: 5000, // Add a 5 second timeout
             }
-        }
-    )
-    const isLoggedIn = !!session;
-
+        );
+        isLoggedIn = !!session;
+    } catch (error) {
+        console.error("Error fetching session:", error);
+        // Continue with isLoggedIn as false
+    }
 
     // Handle preflighted requests
-    const isPreflight = req.method === 'OPTIONS'
+    const isPreflight = req.method === 'OPTIONS';
     
     if (isPreflight) {
         const preflightHeaders = {
-        ...(isAllowedOrigin && { 'Access-Control-Allow-Origin': origin }),
-        ...corsOptions,
-        }
-        return NextResponse.json({}, { headers: preflightHeaders })
+            ...(isAllowedOrigin && { 'Access-Control-Allow-Origin': origin }),
+            ...CORS.OPTIONS,
+        };
+        return NextResponse.json({}, { headers: preflightHeaders });
     }
 
-    const response = NextResponse.next()
+    const response = NextResponse.next();
 
     if (isAllowedOrigin) {
-        response.headers.set('Access-Control-Allow-Origin', origin)
-      }
+        response.headers.set('Access-Control-Allow-Origin', origin);
+    }
      
-      Object.entries(corsOptions).forEach(([key, value]) => {
-        response.headers.set(key, value)
-      })
+    Object.entries(CORS.OPTIONS).forEach(([key, value]) => {
+        response.headers.set(key, value);
+    });
 
+    const isApiAuthRoute = pathName.startsWith(ROUTES.API_AUTH_PREFIX);
+    const isPublicRoute = ROUTES.PUBLIC.some((route) => pathName.startsWith(route));
+    const isAuthRoute = ROUTES.AUTH.some((route) => route === pathName);
 
-      const isApiAuthRoute = pathName.startsWith(apiAuthPrefix);
-      const isPublicRoute =  publicRoutes.some((route) => pathName.startsWith(route));
-      const isAuthRoute = authRoutes.includes(pathName);
-  
-
-    if (isApiAuthRoute ){
+    if (isApiAuthRoute) {
         return response;
     }
 
-    if (isPublicRoute){
+    if (isPublicRoute) {
         return response;
     }
 
-    if (isAuthRoute){
-        if (isLoggedIn){
-            return Response.redirect(new URL('/',req.nextUrl));
+    if (isAuthRoute) {
+        if (isLoggedIn) {
+            return Response.redirect(new URL('/', req.nextUrl));
         }
         return response;
     }
 
-    if (!isLoggedIn && !isPublicRoute){
-        return Response.redirect(new URL('/landing',req.nextUrl));
+    if (!isLoggedIn && !isPublicRoute) {
+        return Response.redirect(new URL('/landing', req.nextUrl));
     }
 
-
-    return response
+    return response;
 }
 
 export const config = {
-    matcher: ['/((?!.+\\.[\\w]+$|_next).*)','/','/(api|trpc)(.*)'],
-}
+    matcher: ['/((?!.+\.[\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+};

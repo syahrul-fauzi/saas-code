@@ -14,5 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "@notionhq/client": "^2.2.15"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
   }
 }

@@ -1,6 +1,7 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+
     "plugins": [
       {
         "name": "next"
@@ -8,7 +9,8 @@
     ],
     "strictNullChecks": true,
     "strict": true,
-    "types": ["vitest"]
+    "types": ["vitest", "jest"],
+
   },
   "include": [
     "next-env.d.ts",

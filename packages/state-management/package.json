@@ -15,5 +15,8 @@
   "dependencies": {
     "recoil": "^0.7.7",
     "@repo/ts-types": "*"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
   }
 }

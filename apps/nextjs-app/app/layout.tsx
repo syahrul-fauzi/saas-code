@@ -11,7 +11,7 @@ import { Toaster } from "@repo/ui/molecules/home/Toaster/v1";
 import { TanstackProvider } from "../providers/tanstack-provider";
 import NextTopLoader from "nextjs-toploader";
 import { VercelAnalytics,VercelSpeedInsights } from "@repo/analytics/vercel.ts";
-import { GoogleAnalytics } from "@repo/analytics/google.ts";
+// import { GoogleAnalytics } from "@repo/analytics/google.ts";
 import { DataProvider } from "../context/DataContext";
 import ActiveStatus from "./(home)/(clones)/messenger-clone/_components/common/ActiveStatus";
 
@@ -42,9 +42,9 @@ export default function RootLayout({
               <Toaster />
             </ThemeProvider>
           </TanstackProvider>
-        <GoogleAnalytics
+        {/* <GoogleAnalytics
           gaId={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_MEASUREMENT_ID as string}
-        />
+        /> */}
       </body>
     </html>
   );

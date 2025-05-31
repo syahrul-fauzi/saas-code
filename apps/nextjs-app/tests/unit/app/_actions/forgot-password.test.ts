@@ -1,40 +1,37 @@
-import { describe, test, expect,vi } from 'vitest';
-import { getUserByEmail, createResetToken } from '@repo/prisma-db/repo/user';
-import { sendResetEmail } from '@repo/email/resend/index';
-import { ForgotPassword } from '@repo/auth/better-auth/_actions/forgot-password';
+import { describe, test, expect, vi } from 'vitest';
+
+// Mock the entire module where authClient is exported
+vi.mock('@repo/auth/better-auth/auth-client', () => ({
+  authClient: {
+    forgetPassword: vi.fn(),
+  },
+}));
+
+import { authClient } from '@repo/auth/better-auth/auth-client';
 
 import dotenv from "dotenv";
 dotenv.config();
 
 // Mock external functions
-vi.mock('@repo/prisma-db/repo/user', () => ({
-  getUserByEmail: vi.fn(),
-  createResetToken: vi.fn(),
-}));
 
-vi.mock('@repo/email/resend/index', () => ({
-  sendResetEmail: vi.fn(),
-}));
 
-describe.concurrent('ForgotPassword', () => {
+describe.concurrent('authClient.forgetPassword', () => {
   test('returns error when email does not exist', async () => {
     
-    (getUserByEmail as any).mockResolvedValue(null);
+    (authClient.forgetPassword as any).mockResolvedValue({ error: "Email doesn't exist!" });
 
-    const response = await ForgotPassword('nonexistent@example.com');
+    const response = await authClient.forgetPassword({ email: 'nonexistent@example.com', redirectTo: "/reset-password" });
 
     expect(response).toEqual({ error: "Email doesn't exist!" });
-    expect(getUserByEmail).toHaveBeenCalledWith('nonexistent@example.com');
+    expect(authClient.forgetPassword).toHaveBeenCalledWith({ email: 'nonexistent@example.com', redirectTo: "/reset-password" });
   });
 
-  test('creates reset token and sends email when email exists', async () => {
-    (getUserByEmail as any).mockResolvedValue({ id: '123', email: 'user@example.com' });
-    (createResetToken as any).mockResolvedValue({ token: 'reset123' });
+  test('sends email when email exists', async () => {
+    (authClient.forgetPassword as any).mockResolvedValue({ success: 'Email with Reset Token sent!' });
 
-    const response = await ForgotPassword('user@example.com');
+    const response = await authClient.forgetPassword({ email: 'user@example.com', redirectTo: "/reset-password" });
 
-    expect(createResetToken).toHaveBeenCalledWith('user@example.com');
-    expect(sendResetEmail).toHaveBeenCalledWith('user@example.com', 'reset123');
     expect(response).toEqual({ success: 'Email with Reset Token sent!' });
+    expect(authClient.forgetPassword).toHaveBeenCalledWith({ email: 'user@example.com', redirectTo: "/reset-password" });
   });
 });

@@ -1,20 +1,209 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["multiSchema","prismaSchemaFolder","fullTextSearchPostgres","postgresqlExtensions"]
-  binaryTargets = ["native", "debian-openssl-1.1.x", "linux-musl"]
+  previewFeatures = ["multiSchema", "fullTextSearch", "postgresqlExtensions"]
+  binaryTargets = ["native", "debian-openssl-1.1.x", "linux-musl", "debian-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL_POSTGRES")
+  directUrl = env("DATABASE_URL_POSTGRES")
   schemas = ["boilerplate_schema","scrapeflow_schema","aicompanion_schema","photoai_schema","github_schema","twitter_schema","messenger_schema"]
-  extensions = [vector]
+  extensions = [vector(schema: "public")]
+}
+
+// Boilerplate Schema
+model User {
+  id            String          @id @default(cuid()) @map("_id")
+  name          String
+  email         String          @unique
+  emailVerified Boolean         @default(false)
+  image         String?
+  role          String          @default("user")
+  banned        Boolean         @default(false)
+  bannedReason  String?
+  banExpires    Int?
+
+  access        AccountAccess   @default(TRIAL)
+  creditsUsed   Int             @default(0)
+  creditsTotal  Int             @default(20)
+
+  accounts      Account[]
+  sessions      Session[]
+
+  connections   Connection[]
+  notifications Notification[]
+  workflows     Workflow[]
+  userToProjects UserToGithubProject[]
+  questionsAsked    Question[]
+  messengerUser  MessengerUser?
+  twitterUser   TwitterUser?
+
+  password      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@schema("boilerplate_schema")
+}
+
+model Account {
+  id                     String   @id @default(cuid()) @map("_id")
+  userId                 String  
+  user                   User     @relation(fields: [userId], references: [id])
+  providerId             String  
+  accountId              String    
+  refreshToken           String?   
+  accessToken            String?   
+  accessTokenExpiresAt   DateTime?       
+  refreshTokenExpiresAt  DateTime?      
+  scope                  String?
+  idToken                String?   
+  password               String?  
+ 
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@schema("boilerplate_schema")
+}
+
+model Session {
+  id           String   @id @default(cuid()) @map("_id")
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  expires      DateTime
+  sessionToken String   @unique
+  accessToken  String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@schema("boilerplate_schema")
+}
+
+model Connection {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("boilerplate_schema")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("boilerplate_schema")
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  question  String
+  answer    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("boilerplate_schema")
+}
+
+// Scrapeflow Schema
+model Workflow {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  name       String
+  description String?
+
+  definition String
+  executionPlan String?
+  creditsCost Int    @default(0)
+
+  status    String  // DRAFT | PUBLISHED
+
+  cron      String? // * * * * * (every minute)
+
+  lastRunAt  DateTime?
+  lastRunId  String?
+  lastRunStatus String?
+  nextRunAt  DateTime?
+
+  createdAt  DateTime @default(now())
+  
+  @@schema("scrapeflow_schema")
+}
+
+// Github Schema
+model GithubProject {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  url         String
+  users       UserToGithubProject[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@schema("github_schema")
+}
+
+model UserToGithubProject {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  projectId String
+  project   GithubProject @relation(fields: [projectId], references: [id])
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("github_schema")
+}
+
+// Twitter Schema
+model TwitterUser {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  username    String
+  accessToken String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@schema("twitter_schema")
+}
+
+// Messenger Schema
+model MessengerUser {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  username    String
+  accessToken String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@schema("messenger_schema")
+}
+
+enum AccountAccess {
+  TRIAL
+  PREMIUM
+  ENTERPRISE
+  
+  @@schema("boilerplate_schema")
 }
 
 

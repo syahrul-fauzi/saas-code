@@ -1,10 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    experimental:{
-        serverComponentsExternalPackages:["puppeteer-core","@sparticuz/chromium"],
-    },
+  serverExternalPackages: [
+    '@sparticuz/chromium',
+    'puppeteer-core',
+    '@prisma/client',
+    'prisma'
+  ],
     reactStrictMode: true,
-    swcMinify: true,
+    // swcMinify: true, // This option is no longer valid in Next.js 15
     images:{
         remotePatterns: [
             {hostname: '0mckiahhlguhefmi.public.blob.vercel-storage.com', protocol:'https'},

@@ -13,6 +13,9 @@
     "@repo/prisma-db": "*",
     "bcryptjs": "^2.4.3"
   },
+  "devDependencies": {
+    "vitest": "^1.0.0"
+  },
   "exports":{
     "./*": "./src/*.ts"
   }

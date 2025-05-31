@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest"
   },
   "exports": {
     "./*.ts": "./src/*.ts"
@@ -15,5 +15,8 @@
   "type": "commonjs",
   "dependencies": {
     "@vercel/analytics": "^1.5.0"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0"
   }
 }

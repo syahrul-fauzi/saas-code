@@ -1,21 +1,30 @@
 import PusherServer from 'pusher';
 import PusherClient from 'pusher-js';
+import { PUSHER_CONFIG } from '../../lib/config';
 
+/**
+ * Pusher server instance for server-side operations
+ * Uses configuration from the centralized config module
+ */
 export const pusherServer = new PusherServer({
-    appId: process.env.PUSHER_APP_ID!,
-    key: process.env.NEXT_PUBLIC_PUSHER_APP_KEY!,
-    secret: process.env.PUSHER_SECRET!,
-    cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!,
-    useTLS: true,
-})
+    appId: PUSHER_CONFIG.SERVER.APP_ID,
+    key: PUSHER_CONFIG.SERVER.KEY,
+    secret: PUSHER_CONFIG.SERVER.SECRET,
+    cluster: PUSHER_CONFIG.SERVER.CLUSTER,
+    useTLS: PUSHER_CONFIG.SERVER.USE_TLS,
+});
 
+/**
+ * Pusher client instance for client-side operations
+ * Uses configuration from the centralized config module
+ */
 export const pusherClient = new PusherClient(
-    process.env.NEXT_PUBLIC_PUSHER_APP_KEY!,
+    PUSHER_CONFIG.CLIENT.KEY,
     {
         channelAuthorization: {
-            endpoint: '/api/pusher',
-            transport: 'ajax'
+            endpoint: PUSHER_CONFIG.CLIENT.CHANNEL_AUTHORIZATION.ENDPOINT,
+            transport: PUSHER_CONFIG.CLIENT.CHANNEL_AUTHORIZATION.TRANSPORT
         },
-        cluster: process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER!,
+        cluster: PUSHER_CONFIG.CLIENT.CLUSTER,
     }
-)
+);

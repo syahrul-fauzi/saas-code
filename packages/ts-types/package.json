@@ -10,7 +10,8 @@
     "./*": "./src/*.ts"
   },
   "devDependencies": {
-    "@repo/typescript-config": "*"
+    "@repo/typescript-config": "*",
+    "vitest": "^1.0.0"
   },
   "keywords": [],
   "author": "",

@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "nodemon --watch src --exec \"node --loader ts-node/esm index.ts\"",
     "build": "tsc",
-    "start": "node --loader ts-node/esm index.ts"
+    "start": "node --loader ts-node/esm index.ts",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +33,7 @@
     "@types/jsonwebtoken": "^9.0.9",
     "ts-node": "^10.9.2",
     "tsup": "^8.4.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^1.0.0"
   }
 }
